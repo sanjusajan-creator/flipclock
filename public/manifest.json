@@ -4,7 +4,7 @@
   "description": "A premium flip-style clock with smooth animations",
   "icons": [
     {
-      "src": "favicon.svg",
+      "src": "logo.svg",
       "type": "image/svg+xml",
       "sizes": "any",
       "purpose": "any maskable"

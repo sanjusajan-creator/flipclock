@@ -30,25 +30,46 @@ function createCard(doc, digit) {
   return el;
 }
 
-function updateCard(el, newDigit, flipSpeed) {
+function updateCard(el, newDigit) {
   const cur = el.dataset.current;
   const nxt = el.dataset.next;
   if (newDigit === nxt) return;
   el.dataset.next = newDigit;
   if (el.classList.contains('flipping')) return;
-  el.classList.add('flipping');
+
+  const root = el.ownerDocument.documentElement;
+  const speedRaw = getComputedStyle(root).getPropertyValue('--flip-speed').trim();
+  const duration = (parseFloat(speedRaw) || 0.55) * 1000;
+  const midPoint = duration * 0.55;
+
   const f = el.querySelector('.leaf-front');
   const b = el.querySelector('.leaf-back');
+  const bottom = el.querySelector('.card-bottom');
   if (f) f.dataset.value = cur;
   if (b) b.dataset.value = newDigit;
-  setTimeout(() => {
+
+  const handleEnd = () => {
+    el.removeEventListener('animationend', handleEnd);
     el.dataset.current = newDigit;
     el.classList.remove('flipping');
     for (const sel of ['.card-top', '.card-bottom', '.leaf-front', '.leaf-back']) {
       const e = el.querySelector(sel);
       if (e) e.dataset.value = newDigit;
     }
-  }, flipSpeed);
+  };
+
+  const handleStart = (e) => {
+    if (e.animationName !== 'flip-down') return;
+    el.removeEventListener('animationstart', handleStart);
+    if (bottom) bottom.dataset.value = cur;
+    setTimeout(() => {
+      if (bottom) bottom.dataset.value = newDigit;
+    }, midPoint);
+  };
+
+  el.addEventListener('animationstart', handleStart);
+  el.addEventListener('animationend', handleEnd);
+  el.classList.add('flipping');
 }
 
 const PIP_OVERRIDES = `
