@@ -9,7 +9,12 @@ const FlipCard = ({ digit }) => {
   digitRef.current = digit;
 
   useEffect(() => {
-    if (digit === current) return;
+    if (digit === current) {
+      if (flipping) {
+        setFlipping(false);
+      }
+      return;
+    }
     if (flipping) {
       pendingRef.current = digit;
       return;
@@ -37,13 +42,11 @@ const FlipCard = ({ digit }) => {
     return () => el.removeEventListener('animationend', onEnd);
   }, [flipping]);
 
-  const oldDigit = flipping ? current : digit;
-
   return (
     <div ref={cardRef} className={`flip-card ${flipping ? 'flipping' : ''}`}>
       <div className="card-half card-top" data-value={digit}></div>
       <div className="card-half card-bottom" data-value={digit}></div>
-      <div className="card-flip flip-top" data-value={oldDigit}></div>
+      <div className="card-flip flip-top" data-value={current}></div>
       <div className="card-flip flip-bottom" data-value={digit}></div>
     </div>
   );

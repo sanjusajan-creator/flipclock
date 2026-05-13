@@ -19,14 +19,11 @@ function createCard(doc, digit) {
   const el = doc.createElement('div');
   el.className = 'flip-card';
   el.dataset.current = digit;
-  el.dataset.next = digit;
   el.innerHTML = `
     <div class="card-half card-top" data-value="${digit}"></div>
     <div class="card-half card-bottom" data-value="${digit}"></div>
-    <div class="leaf">
-      <div class="leaf-front" data-value="${digit}"></div>
-      <div class="leaf-back" data-value="${digit}"></div>
-    </div>`;
+    <div class="card-flip flip-top" data-value="${digit}"></div>
+    <div class="card-flip flip-bottom" data-value="${digit}"></div>`;
   return el;
 }
 
@@ -49,8 +46,13 @@ function updateCard(el, newDigit) {
 
   const handleEnd = () => {
     el.removeEventListener('animationend', handleEnd);
-    el.dataset.current = newDigit;
+    const live = el.querySelector('.flip-bottom').dataset.value;
+    el.dataset.current = live;
     el.classList.remove('flipping');
+    for (const sel of ['.card-top', '.card-bottom', '.flip-bottom']) {
+      const e = el.querySelector(sel);
+      if (e) e.dataset.value = live;
+    }
   };
 
   el.addEventListener('animationend', handleEnd);
@@ -77,9 +79,6 @@ function setupPipFlipClock(pipWindow, parentDoc) {
   ov.textContent = PIP_OVERRIDES;
   pipWindow.document.head.appendChild(ov);
   pipWindow.document.title = 'FlipClock';
-
-  const speedRaw = getComputedStyle(parentDoc.documentElement).getPropertyValue('--flip-speed').trim();
-  const flipSpeed = (parseFloat(speedRaw) || 0.7) * 1000;
 
   const body = pipWindow.document.body;
   body.style.margin = '0';
@@ -175,7 +174,7 @@ function setupPipFlipClock(pipWindow, parentDoc) {
     dayName.textContent = now.toLocaleDateString(undefined, { weekday: 'long' });
     fullDate.textContent = now.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
     const digits = [String(now.getHours()).padStart(2, '0'), String(now.getMinutes()).padStart(2, '0'), String(now.getSeconds()).padStart(2, '0')].join('').split('');
-    digits.forEach((d, i) => { if (i < allCards.length) updateCard(allCards[i], d, flipSpeed); });
+    digits.forEach((d, i) => { if (i < allCards.length) updateCard(allCards[i], d); });
   }, 1000);
 
   return timer;

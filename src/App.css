@@ -371,39 +371,42 @@ body::after {
   transform-style: preserve-3d;
   z-index: 5;
   will-change: transform;
-  display: none;
+  visibility: hidden;
 }
 
 .flip-top {
   top: 0;
   transform-origin: bottom center;
+  border-radius: 12px 12px 0 0;
   background: linear-gradient(180deg, #2f2f2f 0%, #2b2b2b 100%);
+  transform: rotateX(90deg);
 }
 
 .flip-bottom {
   top: 0;
   transform-origin: top center;
   transform: rotateX(90deg);
+  border-radius: 12px 12px 0 0;
   background: linear-gradient(180deg, #2f2f2f 0%, #2b2b2b 100%);
   z-index: 6;
 }
 
 .flip-card.flipping .card-flip {
-  display: block;
+  visibility: visible;
 }
 
 .flip-card.flipping .flip-top {
-  animation: flip-top calc(var(--flip-speed) / 2) cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  animation: flip-top calc(var(--flip-speed) / 2) cubic-bezier(0.4, 0.0, 0.2, 1) both;
 }
 
 .flip-card.flipping .flip-bottom {
-  animation: flip-bottom calc(var(--flip-speed) / 2) cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  animation: flip-bottom calc(var(--flip-speed) / 2) cubic-bezier(0.4, 0.0, 0.2, 1) both;
   animation-delay: calc(var(--flip-speed) / 2);
 }
 
 @keyframes flip-top {
   0% { transform: rotateX(0deg); }
-  100% { transform: rotateX(-90deg); }
+  100% { transform: rotateX(90deg); }
 }
 
 @keyframes flip-bottom {
