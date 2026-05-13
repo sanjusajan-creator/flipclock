@@ -34,28 +34,23 @@ function updateCard(el, newDigit) {
   const cur = el.dataset.current;
   if (newDigit === cur) return;
 
-  el.dataset.next = newDigit;
-
   if (el.classList.contains('flipping')) {
-    const b = el.querySelector('.leaf-back');
-    if (b) b.dataset.value = newDigit;
+    for (const sel of ['.card-top', '.card-bottom', '.flip-bottom']) {
+      const e = el.querySelector(sel);
+      if (e) e.dataset.value = newDigit;
+    }
     return;
   }
 
-  const f = el.querySelector('.leaf-front');
-  const b = el.querySelector('.leaf-back');
-  if (f) f.dataset.value = cur;
-  if (b) b.dataset.value = newDigit;
+  const top = el.querySelector('.flip-top');
+  const bot = el.querySelector('.flip-bottom');
+  if (top) top.dataset.value = cur;
+  if (bot) bot.dataset.value = newDigit;
 
   const handleEnd = () => {
     el.removeEventListener('animationend', handleEnd);
-    const latest = el.dataset.next;
-    el.dataset.current = latest;
+    el.dataset.current = newDigit;
     el.classList.remove('flipping');
-    for (const sel of ['.card-top', '.card-bottom', '.leaf-front', '.leaf-back']) {
-      const e = el.querySelector(sel);
-      if (e) e.dataset.value = latest;
-    }
   };
 
   el.addEventListener('animationend', handleEnd);
