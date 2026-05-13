@@ -1,15 +1,21 @@
 {
   "short_name": "FlipClock",
   "name": "Luxury Flip Clock",
+  "description": "A premium flip-style clock with smooth animations",
   "icons": [
     {
       "src": "favicon.svg",
       "type": "image/svg+xml",
-      "sizes": "any"
+      "sizes": "any",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "any",
   "theme_color": "#030303",
-  "background_color": "#030303"
+  "background_color": "#030303",
+  "categories": ["lifestyle", "utilities"],
+  "lang": "en"
 }
