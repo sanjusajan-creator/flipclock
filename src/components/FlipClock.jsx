@@ -50,11 +50,12 @@ function updateCard(el, newDigit) {
 
   const handleEnd = () => {
     el.removeEventListener('animationend', handleEnd);
-    el.dataset.current = newDigit;
+    const latest = el.dataset.next;
+    el.dataset.current = latest;
     el.classList.remove('flipping');
     for (const sel of ['.card-top', '.card-bottom', '.leaf-front', '.leaf-back']) {
       const e = el.querySelector(sel);
-      if (e) e.dataset.value = newDigit;
+      if (e) e.dataset.value = latest;
     }
   };
 
@@ -63,7 +64,7 @@ function updateCard(el, newDigit) {
     el.removeEventListener('animationstart', handleStart);
     if (bottom) bottom.dataset.value = cur;
     setTimeout(() => {
-      if (bottom) bottom.dataset.value = newDigit;
+      if (bottom) bottom.dataset.value = el.dataset.next;
     }, midPoint);
   };
 
