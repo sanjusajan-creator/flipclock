@@ -302,7 +302,7 @@ const FlipClock = () => {
     <div className="clock-wrapper">
       <header className="clock-header">
         <div className="brand">
-          <img src="/favicon.svg" alt="FlipClock" className="brand-mark" />
+          <img src="/logo.svg" alt="FlipClock" className="brand-mark" />
           <div className="brand-text">
             <span className="brand-title">Aurora Flipclock</span>
             <span className="brand-subtitle">Precision timekeeping</span>
