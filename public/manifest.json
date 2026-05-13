@@ -1,0 +1,15 @@
+{
+  "short_name": "FlipClock",
+  "name": "Luxury Flip Clock",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#030303",
+  "background_color": "#030303"
+}

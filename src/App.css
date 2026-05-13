@@ -1,0 +1,289 @@
+:root {
+  --bg-color: #030303;
+  --card-bg: linear-gradient(160deg, #2a2a2e 0%, #121214 100%);
+  --text-color: #ffffff;
+  --accent-color: #d4af37;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --flip-speed: 0.7s;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(20, 20, 40, 1) 0, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(40, 20, 20, 0.5) 0, transparent 50%);
+  font-family: 'Inter', sans-serif;
+  color: var(--text-color);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Background Texture */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.clock-wrapper {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  animation: fadeIn 1.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header & Controls */
+.clock-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.controls {
+  display: flex;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: #555;
+  padding: 6px 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Main Clock Container */
+.clock-container {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  padding: 3rem 4rem;
+  border-radius: 40px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    0 40px 100px rgba(0, 0, 0, 0.5),
+    inset 0 0 80px rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  max-width: 95vw;
+}
+
+/* Ambient Glow */
+.ambient-glow {
+  position: absolute;
+  inset: 20%;
+  background: var(--accent-color);
+  filter: blur(120px);
+  opacity: 0.05;
+  pointer-events: none;
+  animation: breathe 8s infinite alternate ease-in-out;
+}
+
+@keyframes breathe {
+  from { transform: scale(0.8); opacity: 0.03; }
+  to { transform: scale(1.2); opacity: 0.08; }
+}
+
+/* Date Info */
+.date-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.day-name {
+  font-weight: 200;
+  letter-spacing: 15px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  font-size: 0.9rem;
+}
+
+.full-date {
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: #888;
+  font-size: 0.8rem;
+}
+
+/* Flip Clock Grid */
+.flip-clock {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.flip-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.unit-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: #444;
+  font-weight: 800;
+}
+
+.unit-cards {
+  display: flex;
+  gap: 0.8rem;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.unit-cards:hover {
+  transform: translateY(-5px) scale(1.02);
+}
+
+/* AM/PM Indicator */
+.ampm-indicator {
+  padding-left: 1rem;
+  font-weight: 900;
+  color: #333;
+  font-size: 1.2rem;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 4px;
+}
+
+/* Flip Card Core */
+.flip-card {
+  position: relative;
+  width: 120px;
+  height: 180px;
+  font-size: 110px;
+  font-weight: 900;
+  line-height: 180px;
+  border-radius: 12px;
+  perspective: 1500px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+}
+
+.card-half {
+  position: absolute;
+  inset: 0;
+  height: 50%;
+  background: var(--card-bg);
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.card-top {
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.card-bottom {
+  top: 50%;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 0;
+}
+
+.card-top::after, .card-bottom::after, .leaf-front::after, .leaf-back::after {
+  content: attr(data-value);
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-top::after, .leaf-front::after { top: 0; }
+.card-bottom::after, .leaf-back::after { bottom: 0; }
+
+.leaf {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  z-index: 10;
+  transform-origin: bottom;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipping .leaf {
+  animation: flip-down var(--flip-speed) cubic-bezier(0.7, 0, 0.3, 1) forwards;
+}
+
+@keyframes flip-down {
+  0% { transform: rotateX(0deg); }
+  100% { transform: rotateX(-180deg); }
+}
+
+.leaf-front, .leaf-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  background: var(--card-bg);
+  overflow: hidden;
+}
+
+.leaf-front { border-radius: 12px 12px 0 0; z-index: 2; }
+.leaf-back { transform: rotateX(-180deg); border-radius: 0 0 12px 12px; z-index: 1; }
+
+/* Mechanical details */
+.flip-card::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -4px;
+  width: calc(100% + 8px);
+  height: 4px;
+  background: #000;
+  z-index: 15;
+  transform: translateY(-50%);
+  border-radius: 2px;
+}
+
+/* Media Queries */
+@media (max-width: 900px) {
+  .clock-container { padding: 2rem; border-radius: 20px; }
+  .flip-clock { gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .flip-card { width: 70px; height: 110px; font-size: 60px; line-height: 110px; }
+  .ampm-indicator { writing-mode: horizontal-tb; padding: 0; margin-top: 1rem; }
+}
