@@ -19,6 +19,8 @@ function createCard(doc, digit) {
   const el = doc.createElement('div');
   el.className = 'flip-card';
   el.dataset.current = digit;
+  el.dataset.next = digit;
+  el.dataset.pending = '';
   el.innerHTML = `
     <div class="card-half card-top" data-value="${digit}"></div>
     <div class="card-half card-bottom" data-value="${digit}"></div>
@@ -29,30 +31,37 @@ function createCard(doc, digit) {
 
 function updateCard(el, newDigit) {
   const cur = el.dataset.current;
-  if (newDigit === cur) return;
+  if (newDigit === cur && !el.classList.contains('flipping')) return;
 
   if (el.classList.contains('flipping')) {
-    for (const sel of ['.card-top', '.card-bottom', '.flip-bottom']) {
-      const e = el.querySelector(sel);
-      if (e) e.dataset.value = newDigit;
-    }
+    el.dataset.pending = newDigit;
     return;
   }
 
   const top = el.querySelector('.flip-top');
   const bot = el.querySelector('.flip-bottom');
+  const staticTop = el.querySelector('.card-top');
+  const staticBottom = el.querySelector('.card-bottom');
+  el.dataset.next = newDigit;
+
+  if (staticTop) staticTop.dataset.value = newDigit;
+  if (staticBottom) staticBottom.dataset.value = cur;
   if (top) top.dataset.value = cur;
   if (bot) bot.dataset.value = newDigit;
 
-  const handleEnd = () => {
+  const handleEnd = (e) => {
+    if (e.animationName !== 'flip-bottom-anim') return;
     el.removeEventListener('animationend', handleEnd);
-    const live = el.querySelector('.flip-bottom').dataset.value;
+    const live = el.dataset.next || newDigit;
     el.dataset.current = live;
+    el.dataset.next = live;
     el.classList.remove('flipping');
-    for (const sel of ['.card-top', '.card-bottom', '.flip-bottom']) {
-      const e = el.querySelector(sel);
-      if (e) e.dataset.value = live;
-    }
+    if (staticTop) staticTop.dataset.value = live;
+    if (staticBottom) staticBottom.dataset.value = live;
+    if (bot) bot.dataset.value = live;
+    const pending = el.dataset.pending;
+    el.dataset.pending = '';
+    if (pending && pending !== live) updateCard(el, pending);
   };
 
   el.addEventListener('animationend', handleEnd);
