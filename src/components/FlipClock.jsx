@@ -20,7 +20,6 @@ function createCard(doc, digit) {
   el.className = 'flip-card';
   el.dataset.current = digit;
   el.dataset.next = digit;
-  el.dataset.pending = '';
   el.innerHTML = `
     <div class="card-half card-top" data-value="${digit}"></div>
     <div class="card-half card-bottom" data-value="${digit}"></div>
@@ -42,74 +41,88 @@ function updateCard(el, newDigit) {
   const bot = el.querySelector('.flip-bottom');
   const staticTop = el.querySelector('.card-top');
   const staticBottom = el.querySelector('.card-bottom');
-  el.dataset.next = newDigit;
 
+  el.dataset.next = newDigit;
   if (staticTop) staticTop.dataset.value = newDigit;
   if (staticBottom) staticBottom.dataset.value = cur;
   if (top) top.dataset.value = cur;
   if (bot) bot.dataset.value = newDigit;
 
-  const handleEnd = (e) => {
+  const onEnd = (e) => {
     if (e.animationName !== 'flip-bottom-anim') return;
-    el.removeEventListener('animationend', handleEnd);
-    const live = el.dataset.next || newDigit;
-    el.dataset.current = live;
-    el.dataset.next = live;
+    el.removeEventListener('animationend', onEnd);
+    
+    const latest = el.dataset.next;
+    el.dataset.current = latest;
     el.classList.remove('flipping');
-    if (staticTop) staticTop.dataset.value = live;
-    if (staticBottom) staticBottom.dataset.value = live;
-    if (bot) bot.dataset.value = live;
+    
+    // Sync all layers to the final state
+    if (staticTop) staticTop.dataset.value = latest;
+    if (staticBottom) staticBottom.dataset.value = latest;
+    if (top) top.dataset.value = latest;
+    if (bot) bot.dataset.value = latest;
+    
     const pending = el.dataset.pending;
-    el.dataset.pending = '';
-    if (pending && pending !== live) updateCard(el, pending);
+    if (pending) {
+      el.dataset.pending = '';
+      if (pending !== latest) {
+        // Force reflow and restart
+        el.offsetHeight; 
+        setTimeout(() => updateCard(el, pending), 20);
+      }
+    }
   };
 
-  el.addEventListener('animationend', handleEnd);
+  el.addEventListener('animationend', onEnd);
   el.classList.add('flipping');
 }
 
 const PIP_OVERRIDES = `
-.flip-card { width:54px; height:80px; font-size:44px; line-height:80px; border-radius:6px }
-.unit-cards { gap:0.4rem }
-.flip-clock { gap:0.5rem }
-.unit-divider { font-size:28px }
-.clock-container { padding:0.75rem 1rem; gap:0.5rem; border-radius:16px }
-.clock-shell { padding:0; border-radius:20px }
-.date-info { gap:0.15rem }
-.day-name { font-size:0.55rem; letter-spacing:6px }
-.full-date { font-size:0.5rem }
-.clock-footer { font-size:0.5rem; gap:0.3rem }
-.footer-dot { width:4px; height:4px }
+  :root { --flip-speed: 0.42s; --flip-ease: cubic-bezier(0.4, 0, 0.2, 1); }
+  .flip-card { width:54px; height:80px; font-size:44px; line-height:80px; border-radius:6px; perspective: 400px; }
+  .unit-cards { gap:0.4rem }
+  .flip-clock { gap:0.5rem }
+  .unit-divider { font-size:28px; transform: translateY(-4px); }
+  .clock-container { padding:0.75rem 1rem; gap:0.5rem; border-radius:16px }
+  .clock-shell { padding:0; border-radius:20px }
+  .date-info { gap:0.15rem }
+  .day-name { font-size:0.55rem; letter-spacing:4px }
+  .full-date { font-size:0.5rem; letter-spacing:1px }
+  .clock-footer { font-size:0.45rem; gap:0.3rem; margin-top: 2px; }
+  .footer-dot { width:4px; height:4px }
+  .ampm-indicator { padding:0.2rem 0.4rem; font-size:0.5rem; letter-spacing:1px; border-radius: 4px; }
+  .unit-label { font-size: 0.45rem; letter-spacing: 1px; gap: 0.4rem; }
+  .flip-unit { gap: 0.4rem; }
 `;
 
-function setupPipFlipClock(pipWindow, parentDoc) {
+function setupPipFlipClock(pipWindow, parentDoc, initialIs24Hour) {
   copyStyles(parentDoc, pipWindow.document);
   const ov = pipWindow.document.createElement('style');
   ov.textContent = PIP_OVERRIDES;
   pipWindow.document.head.appendChild(ov);
-  pipWindow.document.title = 'FlipClock';
+  pipWindow.document.title = 'Aurora Clock';
 
   const body = pipWindow.document.body;
-  body.style.margin = '0';
-  body.style.minHeight = '100vh';
-  body.style.display = 'flex';
-  body.style.alignItems = 'center';
-  body.style.justifyContent = 'center';
-  body.style.overflow = 'hidden';
-  body.style.backgroundColor = '#030303';
+  Object.assign(body.style, {
+    margin: '0',
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    backgroundColor: '#030303',
+    background: 'radial-gradient(at 10% 10%, rgba(30, 40, 80, 0.4) 0, transparent 55%)'
+  });
 
   const wrap = pipWindow.document.createElement('div');
   wrap.className = 'clock-wrapper';
+  wrap.style.padding = '0';
   wrap.style.animation = 'none';
   body.appendChild(wrap);
 
   const shell = pipWindow.document.createElement('div');
   shell.className = 'clock-shell';
   wrap.appendChild(shell);
-
-  const glow = pipWindow.document.createElement('div');
-  glow.className = 'ambient-glow';
-  shell.appendChild(glow);
 
   const container = pipWindow.document.createElement('div');
   container.className = 'clock-container';
@@ -158,35 +171,64 @@ function setupPipFlipClock(pipWindow, parentDoc) {
     flipClock.appendChild(u);
   });
 
+  const ampmBox = pipWindow.document.createElement('div');
+  ampmBox.className = 'ampm-indicator';
+  flipClock.appendChild(ampmBox);
+
   const footer = pipWindow.document.createElement('div');
   footer.className = 'clock-footer';
   container.appendChild(footer);
 
   const fl1 = pipWindow.document.createElement('span');
-  fl1.className = 'footer-label';
-  fl1.textContent = 'Mini player';
+  fl1.textContent = 'Mini Player';
   footer.appendChild(fl1);
 
   const dot = pipWindow.document.createElement('span');
   dot.className = 'footer-dot';
-  dot.setAttribute('aria-hidden', 'true');
   footer.appendChild(dot);
 
   const fl2 = pipWindow.document.createElement('span');
-  fl2.className = 'footer-label';
   fl2.textContent = 'Live';
   footer.appendChild(fl2);
 
-  const timer = setInterval(() => {
-    if (pipWindow.closed) { clearInterval(timer); return; }
+  // Store current mode in a way the interval can access
+  let currentIs24Hour = initialIs24Hour;
+
+  const update = () => {
+    if (pipWindow.closed) return;
     const now = new Date();
     dayName.textContent = now.toLocaleDateString(undefined, { weekday: 'long' });
     fullDate.textContent = now.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
-    const digits = [String(now.getHours()).padStart(2, '0'), String(now.getMinutes()).padStart(2, '0'), String(now.getSeconds()).padStart(2, '0')].join('').split('');
-    digits.forEach((d, i) => { if (i < allCards.length) updateCard(allCards[i], d); });
-  }, 1000);
+    
+    let hours = now.getHours();
+    if (!currentIs24Hour) {
+      ampmBox.style.display = 'block';
+      ampmBox.textContent = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+    } else {
+      ampmBox.style.display = 'none';
+    }
 
-  return timer;
+    const digits = [
+      String(hours).padStart(2, '0'),
+      String(now.getMinutes()).padStart(2, '0'),
+      String(now.getSeconds()).padStart(2, '0')
+    ].join('').split('');
+
+    digits.forEach((d, i) => { if (i < allCards.length) updateCard(allCards[i], d); });
+  };
+
+  update(); 
+  const timer = setInterval(update, 1000);
+
+  // Return an object with cleanup and update methods
+  return {
+    cleanup: () => clearInterval(timer),
+    updateMode: (is24) => {
+      currentIs24Hour = is24;
+      update();
+    }
+  };
 }
 
 const FlipClock = () => {
@@ -196,13 +238,20 @@ const FlipClock = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPiP, setIsPiP] = useState(false);
   const pipWindowRef = useRef(null);
-  const pipTimerRef = useRef(null);
+  const pipControllerRef = useRef(null);
   const [isInstalled, setIsInstalled] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(display-mode: standalone)').matches ||
       window.matchMedia('(display-mode: fullscreen)').matches ||
       navigator.standalone === true;
   });
+
+  // Sync PiP window mode when is24Hour changes
+  useEffect(() => {
+    if (pipControllerRef.current) {
+      pipControllerRef.current.updateMode(is24Hour);
+    }
+  }, [is24Hour]);
 
   useEffect(() => {
     const mql = window.matchMedia('(display-mode: standalone)');
@@ -276,16 +325,21 @@ const FlipClock = () => {
       pipWindowRef.current.close();
       return;
     }
-    const pipWindow = await dpip.requestWindow({ width: 520, height: 300 });
-    pipWindowRef.current = pipWindow;
-    pipTimerRef.current = setupPipFlipClock(pipWindow, document);
-    pipWindow.addEventListener('pagehide', () => {
-      if (pipTimerRef.current) clearInterval(pipTimerRef.current);
-      pipWindowRef.current = null;
-      pipTimerRef.current = null;
-      setIsPiP(false);
-    });
-    setIsPiP(true);
+    try {
+      const pipWindow = await dpip.requestWindow({ width: 520, height: 320 });
+      pipWindowRef.current = pipWindow;
+      pipControllerRef.current = setupPipFlipClock(pipWindow, document, is24Hour);
+      
+      pipWindow.addEventListener('pagehide', () => {
+        if (pipControllerRef.current) pipControllerRef.current.cleanup();
+        pipWindowRef.current = null;
+        pipControllerRef.current = null;
+        setIsPiP(false);
+      });
+      setIsPiP(true);
+    } catch (err) {
+      console.error('Failed to enter PiP:', err);
+    }
   };
 
   let hours = time.getHours();

@@ -4,23 +4,27 @@ const FlipCard = ({ digit }) => {
   const [current, setCurrent] = useState(digit);
   const [next, setNext] = useState(digit);
   const [flipping, setFlipping] = useState(false);
-  const pendingRef = useRef(null);
+  const [prevDigit, setPrevDigit] = useState(digit);
+  const [pending, setPending] = useState(null);
+  
   const cardRef = useRef(null);
   const nextRef = useRef(digit);
-  nextRef.current = next;
 
-  useEffect(() => {
-    if (digit === current) {
-      if (!flipping) setNext(digit);
-      return;
-    }
+  // Adjusting state during render
+  if (digit !== prevDigit) {
+    setPrevDigit(digit);
     if (flipping) {
-      pendingRef.current = digit;
-      return;
+      setPending(digit);
+    } else {
+      setNext(digit);
+      setFlipping(true);
     }
-    setNext(digit);
-    setFlipping(true);
-  }, [digit, current, flipping]);
+  }
+
+  // Update nextRef whenever next changes
+  useEffect(() => {
+    nextRef.current = next;
+  }, [next]);
 
   useEffect(() => {
     const el = cardRef.current;
@@ -28,21 +32,26 @@ const FlipCard = ({ digit }) => {
 
     const onEnd = (e) => {
       if (e.animationName !== 'flip-bottom-anim') return;
+      
       const latest = nextRef.current;
       setCurrent(latest);
       setNext(latest);
       setFlipping(false);
-      const pending = pendingRef.current;
-      pendingRef.current = null;
-      if (pending !== undefined && pending !== null && pending !== latest) {
-        setNext(pending);
-        setFlipping(true);
+      
+      if (pending !== null && pending !== latest) {
+        const nextPending = pending;
+        setPending(null);
+        // Small delay to ensure clean transition
+        setTimeout(() => {
+          setNext(nextPending);
+          setFlipping(true);
+        }, 20);
       }
     };
 
     el.addEventListener('animationend', onEnd);
     return () => el.removeEventListener('animationend', onEnd);
-  }, [flipping]);
+  }, [flipping, pending]);
 
   return (
     <div ref={cardRef} className={`flip-card ${flipping ? 'flipping' : ''}`}>
