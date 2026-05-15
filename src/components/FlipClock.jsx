@@ -279,7 +279,7 @@ const FlipClock = () => {
 
   useEffect(() => {
     const handleEnter = () => setIsPiP(true);
-    const dpip = documentPictureInPicture;
+    const dpip = window.documentPictureInPicture;
     if (!dpip) return;
     dpip.addEventListener('enter', handleEnter);
     return () => dpip.removeEventListener('enter', handleEnter);
@@ -319,7 +319,7 @@ const FlipClock = () => {
   };
 
   const handlePiP = async () => {
-    const dpip = documentPictureInPicture;
+    const dpip = window.documentPictureInPicture;
     if (!dpip) return;
     if (pipWindowRef.current && !pipWindowRef.current.closed) {
       pipWindowRef.current.close();
@@ -364,7 +364,7 @@ const FlipClock = () => {
     year: 'numeric'
   });
 
-  const supportsPiP = typeof documentPictureInPicture !== 'undefined';
+  const supportsPiP = typeof window.documentPictureInPicture !== 'undefined';
 
   return (
     <div className="clock-wrapper">
