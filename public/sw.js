@@ -1,4 +1,4 @@
-const CACHE = 'flip-clock-v3';
+const CACHE = 'flip-clock-v4';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
@@ -6,23 +6,13 @@ self.addEventListener('install', () => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    )
+    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
   );
   e.waitUntil(clients.claim());
 });
 
 self.addEventListener('fetch', (e) => {
-  const { request } = e;
-  if (request.method !== 'GET') return;
   e.respondWith(
-    fetch(request)
-      .then((res) => {
-        const clone = res.clone();
-        caches.open(CACHE).then((cache) => cache.put(request, clone));
-        return res;
-      })
-      .catch(() => caches.match(request))
+    fetch(e.request).catch(() => new Response('Offline', { status: 503 }))
   );
 });

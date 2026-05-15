@@ -20,14 +20,18 @@
     </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js');
-        });
-      }
-    </script>
+      <div id="root">
+        <div id="app-loading" style="display:flex;align-items:center;justify-content:center;height:100vh;background:#030303">
+          <span style="color:#d4af37;font-family:system-ui;font-size:14px;letter-spacing:4px;text-transform:uppercase">Loading...</span>
+        </div>
+      </div>
+      <script>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js?v=4');
+          });
+        }
+      </script>
+      <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
